@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Golpea al Topo 🐹</title>
+<style>
+  :root {
+    --bg-green-1:#5dbb4c;
+    --bg-green-2:#3d8d3a;
+    --panel:#2a2a2aee;
+    --panel-border:#00000055;
+    --text-dim:#cbd5e1;
+    --accent:#4ade80;
+  }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu,sans-serif;
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:1.5rem 1rem 3rem;
+    background:
+      radial-gradient(circle at 30% 20%,rgba(255,255,255,.2)0%,rgba(0,0,0,0)60%),
+      radial-gradient(circle at 70% 80%,rgba(0,0,0,.4)0%,rgba(0,0,0,0)60%),
+      linear-gradient(var(--bg-green-1)0%,var(--bg-green-2)70%);
+    background-size:cover;
+    cursor:none;
+  }
+
+  h1{
+    font-size:1.6rem;
+    font-weight:700;
+    margin:0 0 .25rem;
+    text-shadow:0 4px 8px rgba(0,0,0,.6);
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+  }
+  h1 .emoji{
+    font-size:1.4rem;
+    filter:drop-shadow(0 4px 4px rgba(0,0,0,.5));
+  }
+
+  .subtitle{
+    font-size:.9rem;
+    color:var(--text-dim);
+    text-shadow:0 2px 4px rgba(0,0,0,.7);
+    margin-bottom:1rem;
+    text-align:center;
+    max-width:360px;
+    line-height:1.3;
+  }
+
+  /* ===== HUD ===== */
+  .hud-wrapper{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-start;
+    gap:1rem;
+    margin-bottom:1rem;
+  }
+
+  .hud-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:.8rem;
+  }
+
+  .card{
+    min-width:110px;
+    background:var(--panel);
+    border:2px solid var(--panel-border);
+    border-radius:.8rem;
+    box-shadow:0 18px 24px -6px rgba(0,0,0,.9);
+    padding:.7rem .9rem;
+    text-align:center;
+  }
+  .label{
+    font-size:.7rem;
+    font-weight:500;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    margin-bottom:.25rem;
+  }
+  .value{
+    font-size:1.4rem;
+    font-weight:700;
+    color:#fff;
+    text-shadow:0 3px 6px rgba(0,0,0,.8);
+  }
+
+  .difficulty-card{
+    background:var(--panel);
+    border:2px solid var(--panel-border);
+    border-radius:.8rem;
+    box-shadow:0 18px 24px -6px rgba(0,0,0,.9);
+    padding:.7rem .9rem;
+    font-size:.8rem;
+    color:#fff;
+    text-shadow:0 2px 4px rgba(0,0,0,.8);
+  }
+  .difficulty-card label{
+    font-size:.7rem;
+    font-weight:500;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    display:block;
+    margin-bottom:.4rem;
+    text-align:center;
+  }
+  #difficultySelect{
+    width:100%;
+    border-radius:.5rem;
+    border:2px solid #00000055;
+    background:#1e1e1e;
+    color:#fff;
+    font-size:.9rem;
+    padding:.4rem .5rem;
+    box-shadow:0 8px 16px rgba(0,0,0,.8);
+    cursor:pointer;
+  }
+
+  #startBtn{
+    background:radial-gradient(circle at 20% 20%,#fff 0%,#ffe066 40%,#d4af37 70%);
+    border:2px solid #00000055;
+    color:#1e1e1e;
+    font-weight:700;
+    border-radius:.8rem;
+    padding:.8rem 1.2rem;
+    font-size:1rem;
+    cursor:pointer;
+    box-shadow:0 12px 18px -4px rgba(0,0,0,.8),0 4px 0 #00000055 inset;
+    text-shadow:0 1px 0 rgba(255,255,255,.6);
+    transition:transform .08s;
+    min-width:110px;
+    text-align:center;
+  }
+  #startBtn:active{
+    transform:scale(.96);
+  }
+  #startBtn:disabled{
+    filter:grayscale(.6) brightness(.7);
+    cursor:not-allowed;
+  }
+
+  /* ===== TABLERO ===== */
+  .board-wrapper{
+    position:relative;
+    border-radius:1rem;
+    border:3px solid #00000055;
+    box-shadow:
+      0 40px 60px -10px rgba(0,0,0,.8),
+      0 4px 0 #00000066 inset;
+    background:
+      linear-gradient(#2e7d32 0 20%,transparent 20%),
+      radial-gradient(circle at 50% 20%,#8b5e34 0%,#4b331d 70%);
+    background-size:100% 100%;
+    padding-top:1.2rem;
+    padding-bottom:1.5rem;
+    padding-left:2rem;
+    padding-right:2rem;
+  }
+
+  .grass-edge{
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:1.2rem;
+    border-radius:1rem 1rem 0 0;
+    background:
+      repeating-linear-gradient(
+        -45deg,
+        #3fa63d 0 6px,
+        #2d7a2a 6px 12px
+      );
+    box-shadow:0 6px 0 rgba(0,0,0,.4);
+    border-bottom:3px solid rgba(0,0,0,.6);
+  }
+
+  .game-area{
+    width:400px;
+    max-width:92vw;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:2.5rem 2.5rem;
+    position:relative;
+    touch-action:none;
+  }
+
+  @media(max-width:500px){
+    .game-area{
+      width:320px;
+      gap:2rem 2rem;
+    }
+  }
+
+  @media(max-width:380px){
+    .game-area{
+      width:280px;
+      gap:1.5rem 1.5rem;
+    }
+  }
+
+  /* ===== HOYO Y TOPO ===== */
+
+  .hole{
+    position:relative;
+    width:100%;
+    aspect-ratio:1/1;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+  }
+
+  .hole-inner{
+    position:absolute;
+    bottom:.2rem;
+    width:60%;
+    max-width:90px;
+    aspect-ratio:2/1;
+    background:radial-gradient(circle at 50% 60%,#000 0%,#2a1a10 60%);
+    border-radius:50%;
+    filter:blur(1px);
+    box-shadow:0 10px 20px rgba(0,0,0,.9);
+    z-index:1;
+  }
+
+  .hole-rim{
+    position:absolute;
+    bottom:0;
+    width:80%;
+    max-width:120px;
+    aspect-ratio:2.2/1;
+    background:radial-gradient(circle at 50% 40%,#6e4a2d 0%,#3b2514 70%);
+    border-radius:50%;
+    box-shadow:
+      0 6px 10px rgba(0,0,0,.8),
+      0 0 6px rgba(0,0,0,.8) inset,
+      0 -4px 0 rgba(255,255,255,.07) inset;
+    z-index:5;
+  }
+
+  /* Topo que sale con cara */
+  .moleUp{
+    position:absolute;
+    left:50%;
+    bottom:0;
+    width:85%;
+    max-width:110px;
+    aspect-ratio:1/1;
+
+    transform:translate(-50%,-30%);
+    transition:transform .15s, opacity .1s;
+    will-change:transform, opacity;
+
+    z-index:6; /* encimita del borde cuando visible */
+    pointer-events:auto;
+  }
+
+  /* shake: vibración rápida cuando lo golpeas */
+  @keyframes shakeHit{
+    0%   { transform:translate(-50%,-30%) rotate(0deg);   }
+    20%  { transform:translate(calc(-50% - 4px),-32%) rotate(-8deg); }
+    40%  { transform:translate(calc(-50% + 4px),-28%) rotate(8deg);  }
+    60%  { transform:translate(calc(-50% - 3px),-31%) rotate(-6deg); }
+    80%  { transform:translate(calc(-50% + 3px),-29%) rotate(6deg);  }
+    100% { transform:translate(-50%,-30%) rotate(0deg);   }
+  }
+
+  .moleUp.shake{
+    animation:shakeHit .15s linear;
+  }
+
+  /* Estado oculto total */
+  .moleUp.hiddenState{
+    opacity:0;
+    pointer-events:none;
+    transform:translate(-50%,150%);
+    z-index:2;
+  }
+
+  /* Estado arriba visible / pegable */
+  .moleUp.active{
+    opacity:1;
+    pointer-events:auto;
+    transform:translate(-50%,-30%);
+    z-index:6;
+  }
+
+  .moleUpHead{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    width:100%;
+    height:70%;
+    transform:translateX(-50%);
+    background:radial-gradient(circle at 30% 30%,#cfa37a 0%,#8a5b3a 60%);
+    border-radius:999px;
+    border:3px solid #3a2413;
+    box-shadow:0 8px 12px rgba(0,0,0,.7);
+  }
+
+  .moleUpHead.mole-hit{
+    background:radial-gradient(circle at 30% 30%,#b07f5a 0%,#68452a 60%);
+    filter:brightness(.9);
+  }
+
+  .eyes{
+    position:absolute;
+    top:28%;
+    left:50%;
+    width:60%;
+    display:flex;
+    justify-content:space-between;
+    transform:translateX(-50%);
+  }
+
+  .eye{
+    width:.6rem;
+    height:.6rem;
+    background:#000;
+    border-radius:50%;
+    box-shadow:0 0 4px rgba(255,255,255,.4);
+    position:relative;
+  }
+  .eye::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:.25rem;
+    height:.25rem;
+    background:#fff;
+    border-radius:50%;
+    filter:blur(.5px);
+  }
+
+  .eyes.hit .eye{
+    background:transparent;
+    box-shadow:none;
+  }
+  .eyes.hit .eye::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    left:0;
+    width:.6rem;
+    height:3px;
+    background:#000;
+    transform:rotate(45deg) translateY(-50%);
+  }
+  .eyes.hit .eye::before{
+    content:"";
+    position:absolute;
+    top:50%;
+    left:0;
+    width:.6rem;
+    height:3px;
+    background:#000;
+    transform:rotate(-45deg) translateY(-50%);
+  }
+
+  .snout{
+    position:absolute;
+    top:48%;
+    left:50%;
+    width:1.4rem;
+    height:1rem;
+    transform:translateX(-50%);
+    background:radial-gradient(circle at 50% 30%,#ffb7c6 0%,#c0394b 75%);
+    border-radius:.7rem .7rem .5rem .5rem;
+    border:2px solid #4a0006;
+    box-shadow:0 2px 4px rgba(0,0,0,.6);
+  }
+  .snout.hit{
+    background:radial-gradient(circle at 50% 50%,#5f1b24 0%,#2a0a0f 80%);
+    border-color:#000;
+  }
+
+  .snout::before,
+  .snout::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:.7rem;
+    height:2px;
+    background:#000;
+    box-shadow:0 0 3px rgba(255,255,255,.4);
+  }
+  .snout::before{
+    left:-.8rem;
+    transform:translateY(-50%) rotate(10deg);
+  }
+  .snout::after{
+    right:-.8rem;
+    transform:translateY(-50%) rotate(-10deg);
+  }
+
+  .paws{
+    position:absolute;
+    bottom:-.2rem;
+    left:50%;
+    width:60%;
+    transform:translateX(-50%);
+    display:flex;
+    justify-content:space-between;
+  }
+  .paw{
+    width:1rem;
+    height:.7rem;
+    background:radial-gradient(circle at 30% 30%,#d2a37a 0%,#8f5f3b 70%);
+    border:2px solid #3a2413;
+    border-radius:.6rem .6rem .3rem .3rem;
+    box-shadow:0 2px 3px rgba(0,0,0,.6);
+  }
+
+  .popup-score{
+    position:absolute;
+    top:-20px;
+    font-size:1rem;
+    font-weight:700;
+    color:var(--accent);
+    text-shadow:0 0 6px rgba(16,185,129,.9);
+    opacity:0;
+    transform:translateY(10px) scale(.8);
+    transition:all .25s;
+    pointer-events:none;
+    z-index:20;
+  }
+  .popup-score.show{
+    opacity:1;
+    transform:translateY(-10px) scale(1);
+  }
+
+  #gameOverMsg{
+    text-align:center;
+    font-size:1rem;
+    font-weight:600;
+    color:#fff;
+    margin-top:1rem;
+    min-height:1.2em;
+    text-shadow:0 3px 6px rgba(0,0,0,.8);
+  }
+  .highlight{
+    color:var(--accent);
+    font-weight:700;
+    text-shadow:0 0 8px rgba(16,185,129,.9);
+  }
+
+  /* martillo */
+  .hammer{
+    position:fixed;
+    left:0;
+    top:0;
+    width:80px;
+    height:80px;
+    pointer-events:none;
+    z-index:9999;
+    transform-origin:top right;
+    transition:transform .05s;
+    filter:drop-shadow(0 8px 6px rgba(0,0,0,.6));
+  }
+  .hammer-head{
+    position:absolute;
+    right:0;
+    top:0;
+    width:44px;
+    height:30px;
+    background:linear-gradient(#bbbbbb 0%,#666666 80%);
+    border:3px solid #2b2b2b;
+    border-radius:6px;
+    box-shadow:0 3px 4px rgba(0,0,0,.6) inset;
+  }
+  .hammer-handle{
+    position:absolute;
+    right:20px;
+    top:22px;
+    width:16px;
+    height:56px;
+    background:linear-gradient(#8b4b1a 0%,#4b2a12 80%);
+    border:3px solid #2b2b2b;
+    border-radius:4px;
+    transform:rotate(20deg) translateY(-5px);
+    box-shadow:0 4px 6px rgba(0,0,0,.6) inset;
+  }
+  .hammer.hit{
+    animation:bonk .15s linear;
+  }
+  @keyframes bonk{
+    0%   { transform:rotate(30deg) scale(1); }
+    50%  { transform:rotate(80deg) scale(.9); }
+    100% { transform:rotate(30deg) scale(1); }
+  }
+  .hammer.hidden{
+    display:none;
+  }
+</style>
+</head>
+<body>
+
+  <h1>
+    Golpea al Topo
+    <span class="emoji">🐹</span>
+  </h1>
+  <div class="subtitle">
+    El hoyo vacío = el topo se escondió (invisible).<br>
+    Cuando veas la carita = ¡pégale rápido!
+  </div>
+
+  <div class="hud-wrapper">
+    <div class="hud-col">
+      <div class="card">
+        <div class="label">Puntaje</div>
+        <div class="value" id="score">0</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Tiempo</div>
+        <div class="value" id="timeLeft">30</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Mejor Puntaje</div>
+        <div class="value" id="highScore">0</div>
+      </div>
+    </div>
+
+    <div class="hud-col">
+      <div class="difficulty-card">
+        <label for="difficultySelect">Dificultad</label>
+        <select id="difficultySelect">
+          <option value="easy">Fácil 🐢</option>
+          <option value="normal" selected>Normal 😼</option>
+          <option value="hard">Difícil 🔥</option>
+        </select>
+      </div>
+
+      <button id="startBtn">Start</button>
+    </div>
+  </div>
+
+  <div class="board-wrapper">
+    <div class="grass-edge"></div>
+
+    <div class="game-area" id="gameArea">
+      <!-- Hoyos creados en JS -->
+    </div>
+
+    <div id="gameOverMsg"></div>
+  </div>
+
+  <!-- martillo -->
+  <div class="hammer hidden" id="hammer">
+    <div class="hammer-head"></div>
+    <div class="hammer-handle"></div>
+  </div>
+
+<script>
+  /****************************
+   * CONFIG BÁSICA
+   ****************************/
+  const GAME_TIME = 30;
+  const HIT_FACE_DURATION = 250;
+  const SHAKE_HIDE_DELAY = 150; // ms que dejamos temblar antes de esconder
+
+  const DIFFICULTY_SETTINGS = {
+    easy:   { popupMin:800,  popupMax:1400, spawnRate:900  },
+    normal: { popupMin:500,  popupMax:1100, spawnRate:700  },
+    hard:   { popupMin:350,  popupMax:800,  spawnRate:500  },
+  };
+
+  /****************************
+   * ESTADO
+   ****************************/
+  let score = 0;
+  let timeLeft = GAME_TIME;
+  let gameRunning = false;
+  let countdownInterval = null;
+  let moleSpawnInterval = null;
+  let lastHoleIndex = -1;
+
+  let currentPopupMin = DIFFICULTY_SETTINGS.normal.popupMin;
+  let currentPopupMax = DIFFICULTY_SETTINGS.normal.popupMax;
+  let currentSpawnRate = DIFFICULTY_SETTINGS.normal.spawnRate;
+
+  // high score guardado en localStorage
+  let highScoreVal = 0;
+
+  // audio
+  let audioCtx = null;
+  let audioReady = false;
+
+  const gameArea    = document.getElementById("gameArea");
+  const scoreEl     = document.getElementById("score");
+  const timeLeftEl  = document.getElementById("timeLeft");
+  const highScoreEl = document.getElementById("highScore");
+  const startBtn    = document.getElementById("startBtn");
+  const gameOverMsg = document.getElementById("gameOverMsg");
+  const hammer      = document.getElementById("hammer");
+  const difficultySelect = document.getElementById("difficultySelect");
+
+  const HOLES_TOTAL = 9;
+  const holes = [];
+
+  const isTouch = matchMedia("(pointer:coarse)").matches;
+  if (!isTouch) {
+    hammer.classList.remove("hidden");
+  } else {
+    document.body.style.cursor = "auto";
+  }
+
+  /****************************
+   * HIGH SCORE (localStorage)
+   ****************************/
+  function loadHighScore(){
+    const saved = localStorage.getItem("topoHighScore");
+    highScoreVal = saved ? parseInt(saved,10) : 0;
+    if(isNaN(highScoreVal)) highScoreVal = 0;
+    highScoreEl.textContent = highScoreVal;
+  }
+
+  function updateHighScoreIfNeeded(){
+    if(score > highScoreVal){
+      highScoreVal = score;
+      highScoreEl.textContent = highScoreVal;
+      localStorage.setItem("topoHighScore", highScoreVal);
+    }
+  }
+
+  // cargar al inicio
+  loadHighScore();
+
+  /****************************
+   * AUDIO BONK
+   ****************************/
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    audioReady = true;
+  }
+
+  function playBonk() {
+    if (!audioReady || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(70, audioCtx.currentTime + 0.08);
+
+    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.12);
+  }
+
+  /****************************
+   * UTILS
+   ****************************/
+  function randBetween(min,max){
+    return Math.floor(Math.random()*(max-min+1))+min;
+  }
+
+  function randomHoleIndex(){
+    let idx;
+    do {
+      idx = Math.floor(Math.random()*HOLES_TOTAL);
+    } while(idx===lastHoleIndex);
+    lastHoleIndex=idx;
+    return idx;
+  }
+
+  /****************************
+   * CREAR HOYO
+   ****************************/
+  function createHole(index){
+    const hole = document.createElement("div");
+    hole.classList.add("hole");
+
+    const inner = document.createElement("div");
+    inner.classList.add("hole-inner");
+
+    const rim = document.createElement("div");
+    rim.classList.add("hole-rim");
+
+    // topo único
+    const moleUp = document.createElement("div");
+    moleUp.classList.add("moleUp","hiddenState"); // inicia invisible
+
+    const moleUpHead = document.createElement("div");
+    moleUpHead.classList.add("moleUpHead");
+
+    // carita
+    const eyes = document.createElement("div");
+    eyes.classList.add("eyes");
+
+    const eyeL = document.createElement("div");
+    eyeL.classList.add("eye");
+    const eyeR = document.createElement("div");
+    eyeR.classList.add("eye");
+    eyes.appendChild(eyeL);
+    eyes.appendChild(eyeR);
+
+    const snout = document.createElement("div");
+    snout.classList.add("snout");
+
+    const pawsWrap = document.createElement("div");
+    pawsWrap.classList.add("paws");
+
+    const pawLeft = document.createElement("div");
+    pawLeft.classList.add("paw");
+    const pawRight = document.createElement("div");
+    pawRight.classList.add("paw");
+
+    pawsWrap.appendChild(pawLeft);
+    pawsWrap.appendChild(pawRight);
+
+    moleUpHead.appendChild(eyes);
+    moleUpHead.appendChild(snout);
+    moleUpHead.appendChild(pawsWrap);
+
+    moleUp.appendChild(moleUpHead);
+
+    // popup +1
+    const popup = document.createElement("div");
+    popup.classList.add("popup-score");
+    popup.textContent = "+1";
+
+    moleUp.addEventListener("pointerdown",(ev)=>{
+      moveHammer(ev.clientX, ev.clientY, true);
+      bonk(index);
+    });
+
+    hole.appendChild(inner);
+    hole.appendChild(rim);
+    hole.appendChild(moleUp);
+    hole.appendChild(popup);
+
+    gameArea.appendChild(hole);
+
+    return {
+      moleUp,
+      moleUpHead,
+      eyes,
+      snout,
+      popup,
+      busy:false
+    };
+  }
+
+  for(let i=0;i<HOLES_TOTAL;i++){
+    holes.push(createHole(i));
+  }
+
+  /****************************
+   * APARICIÓN / ESCONDER TOPO
+   ****************************/
+  function showMole(holeObj, visibleTime){
+    holeObj.busy = true;
+
+    // aparecer
+    holeObj.moleUp.classList.remove("hiddenState");
+    holeObj.moleUp.classList.add("active");
+
+    setTimeout(()=>{
+      // si sigue activo (no lo golpearon), se esconde solo
+      if(holeObj.moleUp.classList.contains("active")){
+        hideMoleWithNoHit(holeObj);
+      }
+    },visibleTime);
+  }
+
+  function hideMoleWithNoHit(holeObj){
+    holeObj.moleUp.classList.remove("active","shake");
+    holeObj.moleUp.classList.add("hiddenState");
+
+    setTimeout(()=>{
+      holeObj.busy = false;
+    },150);
+  }
+
+  /****************************
+   * GOLPE
+   ****************************/
+  function bonk(index){
+    if(!gameRunning) return;
+    const holeObj = holes[index];
+
+    if(!holeObj.moleUp.classList.contains("active")) return;
+
+    score++;
+    scoreEl.textContent = score;
+
+    playBonk();
+
+    holeObj.popup.classList.add("show");
+    setTimeout(()=>{
+      holeObj.popup.classList.remove("show");
+    },300);
+
+    holeObj.moleUpHead.classList.add("mole-hit");
+    holeObj.eyes.classList.add("hit");
+    holeObj.snout.classList.add("hit");
+
+    // sacudida
+    holeObj.moleUp.classList.add("shake");
+
+    setTimeout(()=>{
+      holeObj.moleUpHead.classList.remove("mole-hit");
+      holeObj.eyes.classList.remove("hit");
+      holeObj.snout.classList.remove("hit");
+    },HIT_FACE_DURATION);
+
+    // luego de temblar, se esconde
+    setTimeout(()=>{
+      holeObj.moleUp.classList.remove("active","shake");
+      holeObj.moleUp.classList.add("hiddenState");
+      holeObj.busy=false;
+    },SHAKE_HIDE_DELAY);
+  }
+
+  /****************************
+   * CICLO DEL JUEGO
+   ****************************/
+  function applyDifficulty(){
+    const diff = difficultySelect.value;
+    const cfg = DIFFICULTY_SETTINGS[diff] || DIFFICULTY_SETTINGS.normal;
+    currentPopupMin = cfg.popupMin;
+    currentPopupMax = cfg.popupMax;
+    currentSpawnRate = cfg.spawnRate;
+  }
+
+  function startGame(){
+    initAudio(); // habilita sonido en primer click real
+
+    applyDifficulty();
+
+    score = 0;
+    timeLeft = GAME_TIME;
+    scoreEl.textContent = score;
+    timeLeftEl.textContent = timeLeft;
+    gameOverMsg.textContent = "";
+    gameRunning = true;
+    startBtn.disabled = true;
+    startBtn.textContent = "Jugando...";
+
+    holes.forEach(h=>{
+      h.moleUp.classList.remove("active","shake");
+      h.moleUp.classList.add("hiddenState");
+      h.busy=false;
+    });
+
+    countdownInterval = setInterval(()=>{
+      timeLeft--;
+      timeLeftEl.textContent = timeLeft;
+      if(timeLeft<=0){
+        endGame();
+      }
+    },1000);
+
+    moleSpawnInterval = setInterval(()=>{
+      spawnMole();
+    }, currentSpawnRate);
+  }
+
+  function spawnMole(){
+    if(!gameRunning) return;
+
+    const idx = randomHoleIndex();
+    const holeObj = holes[idx];
+    if(holeObj.busy) return;
+
+    const visibleTime = randBetween(currentPopupMin,currentPopupMax);
+    showMole(holeObj,visibleTime);
+  }
+
+  function endGame(){
+    gameRunning=false;
+    clearInterval(countdownInterval);
+    clearInterval(moleSpawnInterval);
+
+    holes.forEach(h=>{
+      h.moleUp.classList.remove("active","shake");
+      h.moleUp.classList.add("hiddenState");
+      h.busy=false;
+    });
+
+    // actualizamos récord
+    updateHighScoreIfNeeded();
+
+    gameOverMsg.innerHTML =
+      `¡Tiempo! Puntaje final: <span class="highlight">${score}</span>`;
+
+    startBtn.disabled=false;
+    startBtn.textContent="Reiniciar";
+    timeLeft=0;
+    timeLeftEl.textContent="0";
+  }
+
+  startBtn.addEventListener("click",()=>{
+    if(!gameRunning){
+      startGame();
+    }
+  });
+
+  /****************************
+   * MARTILLO
+   ****************************/
+  function moveHammer(x,y,forceHit=false){
+    hammer.style.left = (x-20)+"px";
+    hammer.style.top  = (y-20)+"px";
+
+    if(forceHit){
+      hammer.classList.add("hit");
+      setTimeout(()=>hammer.classList.remove("hit"),160);
+    }
+  }
+
+  window.addEventListener("pointermove",(ev)=>{
+    if(isTouch) return;
+    moveHammer(ev.clientX, ev.clientY, false);
+  });
+
+  window.addEventListener("pointerdown",(ev)=>{
+    if(isTouch){
+      hammer.classList.remove("hidden");
+      moveHammer(ev.clientX, ev.clientY, true);
+    }
+  });
+
+  window.addEventListener("pointerup",()=>{
+    if(isTouch){
+      hammer.classList.add("hidden");
+    }
+  });
+</script>
+</body>
+</html>
