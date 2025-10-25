@@ -33,7 +33,7 @@
 
 Abre este enlace en tu navegador móvil:
 
-👉 [https://samolizaheug.github.io/golpea-al-topo/](https://samolizaheug.github.io/golpea-al-topo/)
+👉 [https://samolizaheug.github.io/golpea-al-topo](https://samolizaheug.github.io/golpea-al-topo/)
 
 ### 💡 Consejo
 En Chrome (Android) o Safari (iPhone), usa la opción **“Agregar a pantalla de inicio”**.  
